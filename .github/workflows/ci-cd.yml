@@ -3,7 +3,7 @@ name: Yomu CI/CD Pipeline
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "staging", "chore/ci-cd" ]
+    branches: [ "main", "staging" ]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [ "main", "staging" ]
