@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # 1. DATABASE
+  yomu-db:
+    image: postgres:15
+    container_name: yomu-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+      
+  # =========================================================
+  # Hanya dinyalakan saat mau tes full container / deployment
+
+  # 2. BACKEND (Spring Boot)
+  yomu-backend:
+    build: ./backend
+    container_name: yomu-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - yomu-db
+    environment:
+      # OVERRIDE: Saat di docker, ganti localhost jadi nama service 'yomu-db'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://yomu-db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  # 3. FRONTEND (Next.js)
+  yomu-frontend:
+    build: ./frontend
+    container_name: yomu-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Browser tetap akses localhost karena frontend terekspos ke host
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api
+
+volumes:
+  postgres_data:
